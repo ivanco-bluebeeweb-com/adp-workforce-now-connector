@@ -1,0 +1,486 @@
+{
+  "manifest_schema_version": 3,
+  "sdk_version": "5.13.0",
+  "app_id": "adp-workforce-now-connector",
+  "version": "0.1.0",
+  "name": "ADP Workforce Now",
+  "description": "Connect your own ADP Workforce Now organisation (OAuth2 Client Credentials + mutual TLS) to read workers, payroll instructions, time-off requests, and organisational data, plus value-add workforce reports. Requires your own ADP application's Client ID/Secret and a client certificate issued by ADP.",
+  "icon": "icon.svg",
+  "actions_explicit": true,
+  "system": false,
+  "capabilities": [
+    "adp:read"
+  ],
+  "tools": [
+    {
+      "name": "connect_adp",
+      "description": "Connect your ADP Workforce Now organisation: register your ADP application's Client ID, Client Secret, and its client certificate + matching private key (both full PEM text) from developers.adp.com. Unlike most connectors here, ADP requires no browser login -- the connection is validated and finished immediately in this one call.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "adp.connection.created"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "client_id": {
+            "default": "",
+            "description": "Your ADP application's Client ID (developers.adp.com).",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "client_secret": {
+            "default": "",
+            "description": "Your ADP application's Client Secret.",
+            "title": "Client Secret",
+            "type": "string"
+          },
+          "cert_pem": {
+            "default": "",
+            "description": "Your ADP application's client certificate, full PEM text including BEGIN/END lines.",
+            "title": "Cert Pem",
+            "type": "string"
+          },
+          "key_pem": {
+            "default": "",
+            "description": "Your ADP application's private key matching the certificate, full PEM text including BEGIN/END lines.",
+            "title": "Key Pem",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "description": "Optional friendly label for this connection, e.g. 'Acme Inc ADP'.",
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "title": "ConnectAdpParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "default": "",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          },
+          "org_name": {
+            "default": "",
+            "title": "Org Name",
+            "type": "string"
+          }
+        },
+        "title": "ProviderConnection",
+        "type": "object"
+      },
+      "event": "adp-workforce-now-connector.connect",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "adp_workforce_now"
+    },
+    {
+      "name": "list_connections",
+      "description": "List the connected ADP Workforce Now organisations.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "description": "Explicit empty params model -- V17 disallows untyped handlers.",
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "ProviderConnection": {
+            "properties": {
+              "id": {
+                "default": "",
+                "title": "Id",
+                "type": "string"
+              },
+              "label": {
+                "default": "",
+                "title": "Label",
+                "type": "string"
+              },
+              "org_name": {
+                "default": "",
+                "title": "Org Name",
+                "type": "string"
+              }
+            },
+            "title": "ProviderConnection",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "connections": {
+            "items": {
+              "$ref": "#/$defs/ProviderConnection"
+            },
+            "title": "Connections",
+            "type": "array"
+          }
+        },
+        "title": "ProviderConnectionList",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "adp_workforce_now"
+    },
+    {
+      "name": "disconnect_adp",
+      "description": "Disconnect an ADP Workforce Now organisation: deletes the saved Client ID/Client Secret/certificate/private key. Nothing in ADP itself is changed.",
+      "action_type": "destructive",
+      "chain_callable": true,
+      "effects": [
+        "adp.connection.removed"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "description": "Which connection to disconnect (see list_connections).",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_id"
+        ],
+        "title": "DisconnectAdpParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "deleted": {
+            "default": true,
+            "title": "Deleted",
+            "type": "boolean"
+          }
+        },
+        "title": "DeleteResult",
+        "type": "object"
+      },
+      "event": "adp-workforce-now-connector.disconnect",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "adp_workforce_now"
+    },
+    {
+      "name": "list_entities",
+      "description": "List ADP Workforce Now records of any resource type (workers, payroll-workers, time-off-requests, events, organizational-units, pay-statements). time-off-requests and pay-statements need a worker's AOID passed via filter_expr in ADP's own $filter syntax.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected ADP organisation to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "entity": {
+            "description": "ADP resource name, e.g. 'workers', 'payroll-workers', 'time-off-requests', 'events'.",
+            "title": "Entity",
+            "type": "string"
+          },
+          "filter_expr": {
+            "default": "",
+            "description": "Optional ADP $filter query expression, e.g. \"workers/workAssignments/homeOrganizationalUnits/name eq 'Sales'\".",
+            "title": "Filter Expr",
+            "type": "string"
+          },
+          "limit": {
+            "default": 100,
+            "description": "Max records to return (ADP's own page size applies if omitted).",
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entity"
+        ],
+        "title": "ListEntitiesParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "entity": {
+            "default": "",
+            "title": "Entity",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "count": {
+            "default": 0,
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "title": "EntityList",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "adp_workforce_now"
+    },
+    {
+      "name": "get_entity",
+      "description": "Read one ADP Workforce Now record of any resource type in full by its identifier (AOID for workers).",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected ADP organisation to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "entity": {
+            "description": "ADP resource name, e.g. 'workers'.",
+            "title": "Entity",
+            "type": "string"
+          },
+          "entity_id": {
+            "description": "The record's ADP identifier (AOID for workers).",
+            "title": "Entity Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity",
+          "entity_id"
+        ],
+        "title": "GetEntityParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "entity": {
+            "default": "",
+            "title": "Entity",
+            "type": "string"
+          },
+          "data": {
+            "additionalProperties": true,
+            "title": "Data",
+            "type": "object"
+          }
+        },
+        "title": "EntityDetail",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "adp_workforce_now"
+    },
+    {
+      "name": "get_org_info",
+      "description": "Read the connected ADP Workforce Now organisation's own profile: organisation name and total worker count.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected ADP organisation to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "GetOrgInfoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "org_name": {
+            "default": "",
+            "title": "Org Name",
+            "type": "string"
+          },
+          "worker_count": {
+            "default": 0,
+            "title": "Worker Count",
+            "type": "integer"
+          }
+        },
+        "title": "OrgInfo",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "adp_workforce_now"
+    },
+    {
+      "name": "get_headcount_report",
+      "description": "Value-add report: one-glance headcount for the connected ADP organisation -- total worker count broken down by work assignment status (active/terminated/etc).",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected ADP organisation to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "GetOrgInfoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "total_workers": {
+            "default": 0,
+            "title": "Total Workers",
+            "type": "integer"
+          },
+          "by_status": {
+            "additionalProperties": true,
+            "title": "By Status",
+            "type": "object"
+          }
+        },
+        "title": "HeadcountReport",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "adp_workforce_now"
+    },
+    {
+      "name": "get_upcoming_reviews_report",
+      "description": "Value-add report: read ADP event-notification-messages filtered to upcoming performance-review-style events, so HR can see who's due for review soon without combing through raw events.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Which connected ADP organisation to use (see list_connections). Omit if only one is connected.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "GetOrgInfoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "upcoming": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Upcoming",
+            "type": "array"
+          }
+        },
+        "title": "UpcomingReviewsReport",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "adp_workforce_now"
+    }
+  ],
+  "signals": [],
+  "schedules": [],
+  "required_scopes": [],
+  "icon_size_bytes": 677,
+  "lifecycle": {
+    "health_check": {
+      "interval_sec": 60
+    }
+  },
+  "secrets": [
+    {
+      "name": "adp_connections",
+      "description": "JSON array of saved ADP Workforce Now connections (client_id/secret, cert/key, tokens).",
+      "required": false,
+      "write_mode": "extension",
+      "max_bytes": 65536,
+      "scope": "user",
+      "rotation_hint_days": 365
+    }
+  ],
+  "panels": [
+    {
+      "panel_id": "secrets",
+      "slot": "right",
+      "title": "Secrets",
+      "tree": {},
+      "icon": "KeyRound",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "adp_connect",
+      "slot": "left",
+      "title": "ADP Workforce Now",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "adp_connect_help",
+      "slot": "overlay",
+      "title": "How do I set this up?",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "adp_settings",
+      "slot": "center",
+      "title": "",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    }
+  ]
+}
