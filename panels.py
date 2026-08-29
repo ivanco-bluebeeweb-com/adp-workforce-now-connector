@@ -65,12 +65,27 @@ async def adp_connect_panel(ctx, **kwargs) -> object:
         ui.Form(
             action="connect_adp",
             submit_label="Connect ADP",
-            fields=[
-                ui.Input(name="client_id", label="ADP application Client ID", placeholder="Paste your ADP app's Client ID"),
-                ui.Password(name="client_secret", label="ADP application Client Secret", placeholder="Paste your ADP app's Client Secret"),
-                ui.Textarea(name="cert_pem", label="Client certificate (PEM)", placeholder="-----BEGIN CERTIFICATE-----\n..."),
-                ui.Textarea(name="key_pem", label="Private key (PEM)", placeholder="-----BEGIN PRIVATE KEY-----\n..."),
-                ui.Input(name="label", label="Label (optional)", placeholder="e.g. Acme Inc ADP"),
+            children=[
+                ui.Stack(direction="v", gap=1, children=[
+                    ui.Text("ADP application Client ID", variant="caption"),
+                    ui.Input(param_name="client_id", placeholder="Paste your ADP app's Client ID"),
+                ]),
+                ui.Stack(direction="v", gap=1, children=[
+                    ui.Text("ADP application Client Secret", variant="caption"),
+                    ui.Password(param_name="client_secret", placeholder="Paste your ADP app's Client Secret"),
+                ]),
+                ui.Stack(direction="v", gap=1, children=[
+                    ui.Text("Client certificate (PEM)", variant="caption"),
+                    ui.Textarea(param_name="cert_pem", placeholder="-----BEGIN CERTIFICATE-----\n..."),
+                ]),
+                ui.Stack(direction="v", gap=1, children=[
+                    ui.Text("Private key (PEM)", variant="caption"),
+                    ui.Textarea(param_name="key_pem", placeholder="-----BEGIN PRIVATE KEY-----\n..."),
+                ]),
+                ui.Stack(direction="v", gap=1, children=[
+                    ui.Text("Label (optional)", variant="caption"),
+                    ui.Input(param_name="label", placeholder="e.g. Acme Inc ADP"),
+                ]),
             ],
         ),
         ui.Divider(),
