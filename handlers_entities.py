@@ -52,7 +52,7 @@ async def list_entities(ctx, params: ListEntitiesParams) -> ActionResult:
         rows = data
     if params.limit and len(rows) > params.limit:
         rows = rows[:params.limit]
-    return ActionResult.ok(EntityList(entity=params.entity, rows=rows, count=len(rows)))
+    return ActionResult.success(EntityList(entity=params.entity, rows=rows, count=len(rows)), summary="Entities listed.")
 
 
 @chat.function(
@@ -72,4 +72,4 @@ async def get_entity(ctx, params: GetEntityParams) -> ActionResult:
             code="ADP_VALIDATION_FAILED",
         )
     data = await ac.request(ctx, conn, "GET", f"{path}/{params.entity_id}", action="get " + params.entity)
-    return ActionResult.ok(EntityDetail(entity=params.entity, data=data if isinstance(data, dict) else {}))
+    return ActionResult.success(EntityDetail(entity=params.entity, data=data if isinstance(data, dict) else {}), summary="Entity retrieved.")

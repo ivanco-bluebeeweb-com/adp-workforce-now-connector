@@ -140,7 +140,7 @@ async def connect_adp(ctx, params: ConnectAdpParams) -> ActionResult:
     connections = await _load_connections(ctx)
     connections.append(conn)
     await _save_connections(ctx, connections)
-    return ActionResult.ok(_connection_to_entity(conn))
+    return ActionResult.success(_connection_to_entity(conn), summary="Adp connected.")
 
 
 @chat.function(
@@ -153,7 +153,7 @@ async def connect_adp(ctx, params: ConnectAdpParams) -> ActionResult:
 async def list_connections(ctx, params: NoParams) -> ActionResult:
     """List all saved ADP connections."""
     connections = await _load_connections(ctx)
-    return ActionResult.ok(ProviderConnectionList(connections=[_connection_to_entity(c) for c in connections]))
+    return ActionResult.success(ProviderConnectionList(connections=[_connection_to_entity(c) for c in connections]), summary="Connections listed.")
 
 
 @chat.function(
@@ -173,4 +173,4 @@ async def disconnect_adp(ctx, params: DisconnectAdpParams) -> ActionResult:
     if len(remaining) == len(connections):
         return ActionResult.error("No such ADP connection.", code="ADP_NOT_CONNECTED")
     await _save_connections(ctx, remaining)
-    return ActionResult.ok(DeleteResult(deleted=True))
+    return ActionResult.success(DeleteResult(deleted=True), summary="Adp disconnected.")

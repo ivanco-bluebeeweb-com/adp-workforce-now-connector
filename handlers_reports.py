@@ -31,7 +31,7 @@ async def get_org_info(ctx, params: GetOrgInfoParams) -> ActionResult:
     workers = data.get("workers", []) if isinstance(data, dict) else []
     meta = data.get("meta", {}) if isinstance(data, dict) else {}
     total = meta.get("totalNumber", len(workers)) if isinstance(meta, dict) else len(workers)
-    return ActionResult.ok(OrgInfo(org_name=conn.get("org_name", ""), worker_count=int(total or 0)))
+    return ActionResult.success(OrgInfo(org_name=conn.get("org_name", ""), worker_count=int(total or 0)), summary="Org info retrieved.")
 
 
 @chat.function(
@@ -55,7 +55,7 @@ async def get_headcount_report(ctx, params: GetOrgInfoParams) -> ActionResult:
             status_obj = assignments[0].get("assignmentStatus", {}) if isinstance(assignments[0], dict) else {}
             status = status_obj.get("statusCode", {}).get("codeValue", "unknown") if isinstance(status_obj, dict) else "unknown"
         by_status[status] = by_status.get(status, 0) + 1
-    return ActionResult.ok(HeadcountReport(total_workers=len(workers), by_status=by_status))
+    return ActionResult.success(HeadcountReport(total_workers=len(workers), by_status=by_status), summary="Headcount report retrieved.")
 
 
 @chat.function(
@@ -72,4 +72,4 @@ async def get_upcoming_reviews_report(ctx, params: GetOrgInfoParams) -> ActionRe
     data = await ac.request(ctx, conn, "GET", "/core/v1/event-notification-messages", action="upcoming reviews report")
     events = data.get("events", []) if isinstance(data, dict) else []
     upcoming = [e for e in events if isinstance(e, dict) and "review" in str(e.get("data", {})).lower()]
-    return ActionResult.ok(UpcomingReviewsReport(upcoming=upcoming))
+    return ActionResult.success(UpcomingReviewsReport(upcoming=upcoming), summary="Upcoming reviews report retrieved.")

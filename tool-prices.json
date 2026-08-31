@@ -1,0 +1,10 @@
+{
+  "connect_adp": 0,
+  "list_connections": 0,
+  "disconnect_adp": 0,
+  "list_entities": 8,
+  "get_entity": 8,
+  "get_org_info": 8,
+  "get_headcount_report": 40,
+  "get_upcoming_reviews_report": 40
+}
