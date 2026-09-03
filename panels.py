@@ -62,6 +62,9 @@ async def adp_connect_panel(ctx, **kwargs) -> object:
             "How do I set this up?", variant="ghost", size="sm",
             on_click=ui.Call("__panel__adp_connect_help"),
         ),
+        ui.Button("Sign in with ADP (SSO / OAuth 2.0)", variant="primary", size="sm", full_width=True, icon="login"),
+        ui.Divider(),
+        ui.Text("Or connect via Client Credentials / Certificate", variant="caption"),
         ui.Form(
             action="connect_adp",
             submit_label="Connect ADP",
