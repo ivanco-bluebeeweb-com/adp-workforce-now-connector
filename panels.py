@@ -27,8 +27,7 @@ import handlers_connection as h
 
 def _settings_button() -> ui.UINode:
     return ui.Button(
-        "App settings", variant="secondary", size="sm", full_width=True,
-        icon="settings", on_click=ui.Call("__panel__adp_settings"),
+        "App settings", variant="secondary", size="sm", icon="settings", on_click=ui.Call("__panel__adp_settings"),
     )
 
 
@@ -62,7 +61,7 @@ async def adp_connect_panel(ctx, **kwargs) -> object:
             "How do I set this up?", variant="ghost", size="sm",
             on_click=ui.Call("__panel__adp_connect_help"),
         ),
-        ui.Button("Sign in with ADP (SSO / OAuth 2.0)", variant="primary", size="sm", full_width=True, icon="login"),
+        ui.Button("Sign in with ADP (SSO / OAuth 2.0)", variant="primary", size="sm", icon="login"),
         ui.Divider(),
         ui.Text("Or connect via Client Credentials / Certificate", variant="caption"),
         ui.Form(
